@@ -1,0 +1,3590 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "llama-server-apu API",
+    "version": "1.0.0",
+    "description": "All API routes are under /api. The chat interface is at /. Most operations require the configured API key. Model capabilities and launch flags determine feature availability. Native and compatibility aliases share handlers. Additional backend sampling parameters are accepted. Google Cloud prediction mode additionally exposes /api/predict (or its configured prediction suffix), accepting an instances array with @requestFormat dispatch names and returning a predictions array."
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    },
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "paths": {
+    "/apply-template": {
+      "post": {
+        "operationId": "postApplyTemplate",
+        "summary": "POST /api/apply-template",
+        "description": "Apply the model chat template to role/content messages without generating tokens.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audio/transcriptions": {
+      "post": {
+        "operationId": "postAudioTranscriptions",
+        "summary": "POST /api/audio/transcriptions",
+        "description": "Transcribe audio using an audio-capable model. Upload the audio file using multipart/form-data.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "model": {
+                    "type": "string"
+                  },
+                  "language": {
+                    "type": "string"
+                  },
+                  "prompt": {
+                    "type": "string"
+                  },
+                  "response_format": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/completions": {
+      "post": {
+        "operationId": "postChatCompletions",
+        "summary": "POST /api/chat/completions",
+        "description": "Generate an assistant response from role/content messages. Supports tools, multimodal input, reasoning, sampling parameters and SSE streaming.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "data: {\"choices\":[]}\n\ndata: [DONE]\n\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/completions/input_tokens": {
+      "post": {
+        "operationId": "postChatCompletionsInputTokens",
+        "summary": "POST /api/chat/completions/input_tokens",
+        "description": "Tokenize a chat-completions request after applying the model template.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/completions": {
+      "post": {
+        "operationId": "postCompletions",
+        "summary": "POST /api/completions",
+        "description": "Generate text from a native prompt. Supports streaming, sampling parameters, cache reuse and timing data. The v1 variant uses the OpenAI request/response convention.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "data: {\"choices\":[]}\n\ndata: [DONE]\n\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cors-proxy": {
+      "get": {
+        "operationId": "getCorsProxy",
+        "summary": "GET /api/cors-proxy",
+        "description": "Proxy an explicitly configured MCP HTTP request. Requires the CORS proxy feature to be enabled; otherwise returns 403.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "HTTP(S) MCP target. Userinfo authentication in the target URL is rejected."
+          }
+        ]
+      },
+      "post": {
+        "operationId": "postCorsProxy",
+        "summary": "POST /api/cors-proxy",
+        "description": "Proxy an explicitly configured MCP HTTP request. Requires the CORS proxy feature to be enabled; otherwise returns 403.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "HTTP(S) MCP target. Userinfo authentication in the target URL is rejected."
+          }
+        ]
+      }
+    },
+    "/detokenize": {
+      "post": {
+        "operationId": "postDetokenize",
+        "summary": "POST /api/detokenize",
+        "description": "Convert token IDs back into text using the loaded tokenizer.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doc": {
+      "get": {
+        "summary": "Redirect to /api/doc/",
+        "security": [],
+        "responses": {
+          "301": {
+            "description": "Permanent redirect to /api/doc/."
+          }
+        }
+      }
+    },
+    "/doc/": {
+      "get": {
+        "summary": "Bundled API documentation asset",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Documentation available without an API key, including during startup.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doc/openapi.json": {
+      "get": {
+        "summary": "Bundled API documentation asset",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Documentation available without an API key, including during startup.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doc/swagger-ui-bundle.js": {
+      "get": {
+        "summary": "Bundled API documentation asset",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Documentation available without an API key, including during startup.",
+            "content": {
+              "application/javascript": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doc/swagger-ui.css": {
+      "get": {
+        "summary": "Bundled API documentation asset",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Documentation available without an API key, including during startup.",
+            "content": {
+              "text/css": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/embeddings": {
+      "post": {
+        "operationId": "postEmbeddings",
+        "summary": "POST /api/embeddings",
+        "description": "Compute embedding vectors. Requires an embedding-capable model and embedding mode. The v1 variant uses the OpenAI-compatible input format.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "GET /api/health",
+        "description": "Read server health. Returns 503 while a model is loading; no API key is required.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "security": []
+      }
+    },
+    "/infill": {
+      "post": {
+        "operationId": "postInfill",
+        "summary": "POST /api/infill",
+        "description": "Generate a fill-in-the-middle completion from an input prefix and suffix.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lora-adapters": {
+      "get": {
+        "operationId": "getLoraAdapters",
+        "summary": "GET /api/lora-adapters",
+        "description": "GET lists LoRA adapters; POST changes their scaling factors.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        }
+      },
+      "post": {
+        "operationId": "postLoraAdapters",
+        "summary": "POST /api/lora-adapters",
+        "description": "GET lists LoRA adapters; POST changes their scaling factors.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "operationId": "getMetrics",
+        "summary": "GET /api/metrics",
+        "description": "Read Prometheus metrics, including TTFT and queue timings. Requires --metrics.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        }
+      }
+    },
+    "/models": {
+      "post": {
+        "operationId": "postModels",
+        "summary": "POST /api/models",
+        "description": "List available models; requires the API key when one is configured. In router mode POST downloads a model from Hugging Face and DELETE cancels a download or removes a downloaded model.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteModels",
+        "summary": "DELETE /api/models",
+        "description": "List available models; requires the API key when one is configured. In router mode POST downloads a model from Hugging Face and DELETE cancels a download or removes a downloaded model.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        }
+      },
+      "get": {
+        "operationId": "getModels",
+        "summary": "GET /api/models",
+        "description": "List available models; requires the API key when one is configured. In router mode POST downloads a model from Hugging Face and DELETE cancels a download or removes a downloaded model.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        }
+      }
+    },
+    "/models/load": {
+      "post": {
+        "operationId": "postModelsLoad",
+        "summary": "POST /api/models/load",
+        "description": "Load a model in router mode. The model field identifies a configured model.",
+        "tags": [
+          "Router"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/models/sse": {
+      "get": {
+        "operationId": "getModelsSse",
+        "summary": "GET /api/models/sse",
+        "description": "Subscribe to model status and loading progress as server-sent events in router mode.",
+        "tags": [
+          "Router"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "data: {\"choices\":[]}\n\ndata: [DONE]\n\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        }
+      }
+    },
+    "/models/unload": {
+      "post": {
+        "operationId": "postModelsUnload",
+        "summary": "POST /api/models/unload",
+        "description": "Unload a model in router mode and release its inference resources.",
+        "tags": [
+          "Router"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/predict": {
+      "post": {
+        "summary": "Google Cloud prediction compatibility (only in GCP mode)",
+        "description": "Default prediction suffix. AIP_PREDICT_ROUTE can select a different suffix under /api. Each instance carries @requestFormat (a handler suffix or its camelCase alias). Streaming is disabled for these batched calls.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "instances"
+                ],
+                "properties": {
+                  "instances": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "@requestFormat"
+                      ],
+                      "properties": {
+                        "@requestFormat": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "predictions": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid instances or request format."
+          },
+          "401": {
+            "description": "Invalid API key."
+          },
+          "503": {
+            "description": "Model loading."
+          }
+        }
+      }
+    },
+    "/props": {
+      "get": {
+        "operationId": "getProps",
+        "summary": "GET /api/props",
+        "description": "Read model capabilities, chat template, defaults and router state. POST changes permitted global properties and requires --props.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "parameters": [
+          {
+            "name": "model",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "autoload",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "postProps",
+        "summary": "POST /api/props",
+        "description": "Read model capabilities, chat template, defaults and router state. POST changes permitted global properties and requires --props.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rerank": {
+      "post": {
+        "operationId": "postRerank",
+        "summary": "POST /api/rerank",
+        "description": "Rank documents by relevance to a query using a reranking-capable model.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reranking": {
+      "post": {
+        "operationId": "postReranking",
+        "summary": "POST /api/reranking",
+        "description": "Alias for document reranking.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/responses": {
+      "post": {
+        "operationId": "postResponses",
+        "summary": "POST /api/responses",
+        "description": "Generate a response using the OpenAI Responses-compatible input format. Supports tools and streaming.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "data: {\"choices\":[]}\n\ndata: [DONE]\n\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/responses/input_tokens": {
+      "post": {
+        "operationId": "postResponsesInputTokens",
+        "summary": "POST /api/responses/input_tokens",
+        "description": "Tokenize a Responses request after applying the model template.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/slots": {
+      "get": {
+        "operationId": "getSlots",
+        "summary": "GET /api/slots",
+        "description": "Read inference slot state. Requires --slots.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        }
+      }
+    },
+    "/slots/{id_slot}": {
+      "post": {
+        "operationId": "postSlotsIdSlot",
+        "summary": "POST /api/slots/{id_slot}",
+        "description": "Save, restore or erase a slot prompt cache. Specify action in the query and filename for save/restore. Requires configured slot persistence.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id_slot",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "save",
+                "restore",
+                "erase"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/tokenize": {
+      "post": {
+        "operationId": "postTokenize",
+        "summary": "POST /api/tokenize",
+        "description": "Convert content to token IDs using the loaded tokenizer; add_special and with_pieces control the result.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools": {
+      "get": {
+        "operationId": "getTools",
+        "summary": "GET /api/tools",
+        "description": "GET lists available built-in and configured MCP tools; POST executes one. Requires enabled server tools or MCP servers; otherwise returns 403.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        }
+      },
+      "post": {
+        "operationId": "postTools",
+        "summary": "POST /api/tools",
+        "description": "GET lists available built-in and configured MCP tools; POST executes one. Requires enabled server tools or MCP servers; otherwise returns 403.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Streaming tool output followed by an event with done=true."
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "tool"
+                ],
+                "properties": {
+                  "tool": {
+                    "type": "string"
+                  },
+                  "params": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "stream": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "x-tool-cwd",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Working directory override for tools that accept it."
+          }
+        ]
+      }
+    },
+    "/v1/audio/transcriptions": {
+      "post": {
+        "operationId": "postV1AudioTranscriptions",
+        "summary": "POST /api/v1/audio/transcriptions",
+        "description": "Transcribe audio using an audio-capable model. Upload the audio file using multipart/form-data.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "model": {
+                    "type": "string"
+                  },
+                  "language": {
+                    "type": "string"
+                  },
+                  "prompt": {
+                    "type": "string"
+                  },
+                  "response_format": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/chat/completions": {
+      "post": {
+        "operationId": "postV1ChatCompletions",
+        "summary": "POST /api/v1/chat/completions",
+        "description": "Generate an assistant response from role/content messages. Supports tools, multimodal input, reasoning, sampling parameters and SSE streaming.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "data: {\"choices\":[]}\n\ndata: [DONE]\n\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/chat/completions/control": {
+      "post": {
+        "operationId": "postV1ChatCompletionsControl",
+        "summary": "POST /api/v1/chat/completions/control",
+        "description": "Control an active chat completion, including skipping reasoning. Requires an active request.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/chat/completions/input_tokens": {
+      "post": {
+        "operationId": "postV1ChatCompletionsInputTokens",
+        "summary": "POST /api/v1/chat/completions/input_tokens",
+        "description": "Tokenize a chat-completions request after applying the model template.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/completions": {
+      "post": {
+        "operationId": "postV1Completions",
+        "summary": "POST /api/v1/completions",
+        "description": "Generate text from a native prompt. Supports streaming, sampling parameters, cache reuse and timing data. The v1 variant uses the OpenAI request/response convention.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "data: {\"choices\":[]}\n\ndata: [DONE]\n\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/embeddings": {
+      "post": {
+        "operationId": "postV1Embeddings",
+        "summary": "POST /api/v1/embeddings",
+        "description": "Compute embedding vectors. Requires an embedding-capable model and embedding mode. The v1 variant uses the OpenAI-compatible input format.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "operationId": "getV1Health",
+        "summary": "GET /api/v1/health",
+        "description": "Read server health. Returns 503 while a model is loading; no API key is required.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/messages": {
+      "post": {
+        "operationId": "postV1Messages",
+        "summary": "POST /api/v1/messages",
+        "description": "Generate a response using Anthropic-compatible messages. Accepts X-Api-Key or Bearer authentication.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "data: {\"choices\":[]}\n\ndata: [DONE]\n\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/messages/count_tokens": {
+      "post": {
+        "operationId": "postV1MessagesCountTokens",
+        "summary": "POST /api/v1/messages/count_tokens",
+        "description": "Count tokens for an Anthropic-compatible messages request without generating a response.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/models": {
+      "get": {
+        "operationId": "getV1Models",
+        "summary": "GET /api/v1/models",
+        "description": "List available models; requires the API key when one is configured. In router mode POST downloads a model from Hugging Face and DELETE cancels a download or removes a downloaded model.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        }
+      }
+    },
+    "/v1/rerank": {
+      "post": {
+        "operationId": "postV1Rerank",
+        "summary": "POST /api/v1/rerank",
+        "description": "Rank documents by relevance to a query using a reranking-capable model.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reranking": {
+      "post": {
+        "operationId": "postV1Reranking",
+        "summary": "POST /api/v1/reranking",
+        "description": "Alias for document reranking.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/responses": {
+      "post": {
+        "operationId": "postV1Responses",
+        "summary": "POST /api/v1/responses",
+        "description": "Generate a response using the OpenAI Responses-compatible input format. Supports tools and streaming.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "data: {\"choices\":[]}\n\ndata: [DONE]\n\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/responses/input_tokens": {
+      "post": {
+        "operationId": "postV1ResponsesInputTokens",
+        "summary": "POST /api/v1/responses/input_tokens",
+        "description": "Tokenize a Responses request after applying the model template.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/stream": {
+      "get": {
+        "operationId": "getV1Stream",
+        "summary": "GET /api/v1/stream",
+        "description": "GET resumes a buffered generation stream; DELETE cancels its producer and removes the replay session. conv_id identifies the conversation and from the byte offset.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "data: {\"choices\":[]}\n\ndata: [DONE]\n\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "parameters": [
+          {
+            "name": "conv_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteV1Stream",
+        "summary": "DELETE /api/v1/stream",
+        "description": "GET resumes a buffered generation stream; DELETE cancels its producer and removes the replay session. conv_id identifies the conversation and from the byte offset.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "data: {\"choices\":[]}\n\ndata: [DONE]\n\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "parameters": [
+          {
+            "name": "conv_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ]
+      }
+    },
+    "/v1/streams/lookup": {
+      "post": {
+        "operationId": "postV1StreamsLookup",
+        "summary": "POST /api/v1/streams/lookup",
+        "description": "Find currently active replay sessions for the supplied conversation_ids.",
+        "tags": [
+          "Inference"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or incompatible model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Feature disabled or operation forbidden."
+          },
+          "404": {
+            "description": "Model, slot or resource not found."
+          },
+          "500": {
+            "description": "Server error."
+          },
+          "503": {
+            "description": "Model loading or server unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StreamLookup"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "code": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "Request": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "model": {
+            "type": "string"
+          },
+          "prompt": {},
+          "input": {},
+          "stream": {
+            "type": "boolean",
+            "default": false
+          },
+          "temperature": {
+            "type": "number"
+          },
+          "top_p": {
+            "type": "number"
+          },
+          "top_k": {
+            "type": "integer"
+          },
+          "max_tokens": {
+            "type": "integer"
+          },
+          "n_predict": {
+            "type": "integer"
+          },
+          "seed": {
+            "type": "integer"
+          },
+          "query": {
+            "type": "string"
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "input_prefix": {
+            "type": "string"
+          },
+          "input_suffix": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "tool_choice": {},
+          "response_format": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "ChatRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Request"
+          },
+          {
+            "type": "object",
+            "required": [
+              "messages"
+            ],
+            "properties": {
+              "messages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "role"
+                  ],
+                  "properties": {
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "system",
+                        "developer",
+                        "user",
+                        "assistant",
+                        "tool"
+                      ]
+                    },
+                    "content": {
+                      "oneOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      ]
+                    },
+                    "tool_calls": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "tool_call_id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "example": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Hello"
+            }
+          ],
+          "stream": false
+        }
+      },
+      "TokenRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string"
+          },
+          "tokens": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "add_special": {
+            "type": "boolean"
+          },
+          "with_pieces": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ModelRequest": {
+        "type": "object",
+        "required": [
+          "model"
+        ],
+        "properties": {
+          "model": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "StreamLookup": {
+        "type": "object",
+        "required": [
+          "conversation_ids"
+        ],
+        "properties": {
+          "conversation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+ServerRoot "/opt/llama-server-apu"
+DefaultRuntimeDir "/opt/llama-server-apu/web"
+PidFile "/opt/llama-server-apu/web/httpd.pid"
+@LOAD_MODULES@
+User llama-server-apu
+Group llama-server-apu
+ServerName @DOMAIN@
+ServerTokens Prod
+ServerSignature Off
+ErrorLog /var/www/@DOMAIN@-logs/error.log
+LogLevel warn
+LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+SSLSessionCache "shmcb:/opt/llama-server-apu/web/ssl-session-cache(512000)"
+Listen 0.0.0.0:@HTTP_PORT@ http
+Listen 0.0.0.0:@HTTPS_PORT@ https
+
+<VirtualHost *:@HTTP_PORT@>
+  ServerName @DOMAIN@
+  DocumentRoot /var/www/@DOMAIN@
+  ServerAdmin admin@@DOMAIN@
+  ErrorLog /var/www/@DOMAIN@-logs/error.log
+  CustomLog /var/www/@DOMAIN@-logs/access.log combined
+  <Directory "/var/www/@DOMAIN@">
+    Require all granted
+    Options FollowSymLinks
+    AllowOverride All
+  </Directory>
+  <Directory "/var/www/@DOMAIN@/__">
+    AuthType Basic
+    AuthName "Restricted Content"
+    AuthUserFile /etc/apache2/.htpasswd
+    Require valid-user
+  </Directory>
+  RewriteEngine On
+  RewriteRule ^ https://@DOMAIN@:@HTTPS_PORT@%{REQUEST_URI} [END,NE,R=permanent]
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+  <VirtualHost *:@HTTPS_PORT@>
+    ServerName @DOMAIN@
+    DocumentRoot /var/www/@DOMAIN@
+    ServerAdmin admin@@DOMAIN@
+    ErrorLog /var/www/@DOMAIN@-logs/error.log
+    CustomLog /var/www/@DOMAIN@-logs/access.log combined
+    SSLEngine On
+    SSLProtocol -all +TLSv1.2 +TLSv1.3
+    SSLCertificateFile /opt/llama-server-apu/certificates/server.crt
+    SSLCertificateKeyFile /opt/llama-server-apu/certificates/server.key
+    <Directory "/var/www/@DOMAIN@">
+      Require all granted
+      Options FollowSymLinks
+      AllowOverride All
+    </Directory>
+    ProxyRequests Off
+    ProxyPreserveHost On
+    ProxyTimeout 3600
+    RequestHeader set X-Forwarded-Proto "https"
+    ProxyPass / http://127.0.0.1:18080/ timeout=3600
+    ProxyPassReverse / http://127.0.0.1:18080/
+  </VirtualHost>
+</IfModule>

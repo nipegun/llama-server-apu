@@ -1,0 +1,21 @@
+[Unit]
+Description=HTTPS frontend for llama-server-apu
+Wants=llama-server-apu.service
+After=network.target llama-server-apu.service
+
+[Service]
+Type=simple
+User=llama-server-apu
+Group=llama-server-apu
+WorkingDirectory=/opt/llama-server-apu
+ExecStart=/usr/bin/python3 -B /opt/llama-server-apu/config/start-web.py
+Restart=on-failure
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=40
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

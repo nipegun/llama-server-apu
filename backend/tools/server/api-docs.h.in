@@ -1,0 +1,38 @@
+#pragma once
+
+// Embedded documentation stays available with --no-ui and while models load.
+inline constexpr char cOpenApiDocument[] = R"apidoc(@cOpenApiDocument@)apidoc";
+inline constexpr char cSwaggerScript[] = R"apidoc(@cSwaggerScript@)apidoc";
+inline constexpr char cSwaggerStyle[] = R"apidoc(@cSwaggerStyle@)apidoc";
+inline constexpr char cApiDocumentation[] = R"apidoc(<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>llama-server-apu API</title>
+    <link rel="stylesheet" href="/api/doc/swagger-ui.css">
+    <style>
+      * { box-sizing: border-box; min-width: 0; }
+      body { margin: 0; overflow-wrap: anywhere; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+      .swagger-ui .wrapper { width: 100%; padding: 0 0.5rem; }
+      .swagger-ui .opblock-summary { flex-wrap: wrap; }
+      .swagger-ui .opblock-summary-path { max-width: 100%; overflow-wrap: anywhere; }
+      .swagger-ui table { display: block; overflow-x: auto; }
+      @media (max-width: 639px) { pre { padding: 0.5rem; font-size: 11px; } }
+    </style>
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="/api/doc/swagger-ui-bundle.js"></script>
+    <script>
+      SwaggerUIBundle({
+        url: '/api/doc/openapi.json',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        validatorUrl: null,
+        persistAuthorization: false
+      });
+    </script>
+  </body>
+</html>)apidoc";

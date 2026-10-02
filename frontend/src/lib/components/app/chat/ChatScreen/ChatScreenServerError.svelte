@@ -1,0 +1,41 @@
+<script lang="ts">
+  import { fText } from '$lib/i18n';
+	import { AlertTriangle, Loader2, RefreshCw } from '@lucide/svelte';
+	import * as Alert from '$lib/components/ui/alert';
+	import { ICON_CLASS_DEFAULT } from '$lib/constants';
+	import { serverStore } from '$lib/stores';
+
+	let hasError = $derived(!!serverStore.error);
+	let isLoadingModel = $derived(serverStore.status === 503);
+</script>
+
+{#if hasError}
+	<div class="pointer-events-auto mx-auto mb-4 max-w-[48rem] px-1">
+		<Alert.Root variant={isLoadingModel ? 'default' : 'destructive'}>
+			{#if isLoadingModel}
+				<Loader2 class="{ICON_CLASS_DEFAULT} animate-spin" />
+			{:else}
+				<AlertTriangle class={ICON_CLASS_DEFAULT} />
+			{/if}
+
+			<Alert.Title class="flex items-center justify-between">
+				<span>{isLoadingModel ? fText('message64590e4b6bc5') : fText('messageb0f398a57ea3')}</span>
+
+				{#if !isLoadingModel}
+					<button
+						class="flex items-center gap-1.5 rounded-lg bg-destructive/20 px-2 py-1 text-xs font-medium hover:bg-destructive/30 disabled:opacity-50"
+						disabled={serverStore.loading}
+						onclick={() => serverStore.fetch()}
+					>
+						<RefreshCw class="h-3 w-3 {serverStore.loading ? 'animate-spin' : ''}" />
+						{serverStore.loading ? fText('message84a657bcf3d9') : fText('message942087cc2d41')}
+					</button>
+				{/if}
+			</Alert.Title>
+
+			{#if !isLoadingModel}
+				<Alert.Description>{serverStore.error}</Alert.Description>
+			{/if}
+		</Alert.Root>
+	</div>
+{/if}

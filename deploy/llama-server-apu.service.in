@@ -1,0 +1,19 @@
+[Unit]
+Description=llama-server-apu for x86-64 APUs
+After=network.target
+
+[Service]
+Type=simple
+User=llama-server-apu
+Group=llama-server-apu
+WorkingDirectory=/opt/llama-server-apu
+Environment=XDG_CACHE_HOME=/opt/llama-server-apu/cache
+ExecStart=@PREFIX@/bin/llama-server-apu --model /opt/llama-server-apu/models/model.gguf --host 127.0.0.1 --port 18080 --api-prefix /api --api-key-file /opt/llama-server-apu/config/api-key.txt
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

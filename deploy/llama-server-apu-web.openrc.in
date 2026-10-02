@@ -1,0 +1,19 @@
+#!/sbin/openrc-run
+
+name="llama-server-apu-web"
+description="HTTPS frontend for llama-server-apu"
+command="/usr/bin/python3"
+command_args="-B /opt/llama-server-apu/config/start-web.py"
+command_user="llama-server-apu:llama-server-apu"
+directory="/opt/llama-server-apu"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+output_log="/var/log/llama-server-apu-web.log"
+error_log="/var/log/llama-server-apu-web.log"
+retry="TERM/40/KILL/5"
+
+depend() {
+  need net
+  use llama-server-apu
+  after llama-server-apu
+}
